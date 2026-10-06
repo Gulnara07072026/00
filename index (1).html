@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Реестр исков — Казахтелеком</title>
+<style>
+  :root{
+    --blue:#0072bc; --blue-d:#00507f; --ink:#1d2733; --muted:#6b7785; --line:#dde3ea; --bg:#f3f6f9; --card:#fff;
+    --out:#c62828; --out-bg:#fdecec; --in:#2e7d32; --in-bg:#e8f5e9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);font-size:14px}
+  header{background:#fff;border-bottom:3px solid var(--blue);padding:10px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .brand-mark{display:flex;align-items:center;min-height:44px}
+  .brand-mark img{max-height:48px;max-width:220px}
+  .wordmark{font-weight:800;font-size:24px;color:var(--blue);letter-spacing:.3px}
+  header h1{font-size:18px;margin:0;font-weight:600;flex:1;min-width:200px}
+  header .tools{display:flex;gap:8px;flex-wrap:wrap}
+  nav{display:flex;gap:4px;padding:12px 24px 0;border-bottom:1px solid var(--line);background:#fff}
+  nav button{border:0;background:none;padding:10px 18px;font-size:15px;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;font-weight:600}
+  nav button.active{color:var(--blue);border-bottom-color:var(--blue)}
+  main{padding:20px 24px;max-width:1500px;margin:0 auto}
+  .btn{border:1px solid var(--line);background:#fff;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--ink)}
+  .btn:hover{border-color:var(--blue);color:var(--blue)}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn.primary:hover{background:var(--blue-d);color:#fff}
+  .btn.danger:hover{border-color:var(--out);color:var(--out)}
+  .btn.sm{padding:4px 9px;font-size:12px}
+  .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end;background:var(--card);padding:14px;border-radius:8px;border:1px solid var(--line);margin-bottom:14px}
+  .filters label,.form label{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:4px}
+  input,select,textarea{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+  input:focus,select:focus,textarea:focus{outline:2px solid #9fd0f0;border-color:var(--blue)}
+  .grow{flex:1;min-width:240px}
+  .counter{font-size:13px;color:var(--muted);margin:0 0 8px}
+  .tablewrap{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:auto}
+  table{border-collapse:collapse;width:100%}
+  th{background:#eef2f6;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);padding:9px 10px;white-space:nowrap}
+  td{padding:9px 10px;border-top:1px solid var(--line);vertical-align:top}
+  td.num,th.num{text-align:right;white-space:nowrap}
+  tr.out td{background:var(--out-bg)} tr.out td:first-child{border-left:5px solid var(--out)}
+  tr.in td{background:var(--in-bg)} tr.in td:first-child{border-left:5px solid var(--in)}
+  tr.clickable{cursor:pointer} tr.clickable:hover td{filter:brightness(.97)}
+  .tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap}
+  .tag.out{background:var(--out)} .tag.in{background:var(--in)}
+  .lost{display:inline-block;background:#222;color:#fff;font-weight:800;font-size:12px;padding:3px 8px;border-radius:4px;letter-spacing:.4px;white-space:nowrap}
+  .plost{display:inline-block;background:#e68a00;color:#fff;font-weight:800;font-size:12px;padding:3px 8px;border-radius:4px;white-space:nowrap}
+  .won{color:#1b5e20;font-weight:700;font-size:12px}
+  .empty{padding:40px;text-align:center;color:var(--muted)}
+  dialog{border:0;border-radius:10px;padding:0;max-width:760px;width:94%;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+  dialog::backdrop{background:rgba(0,0,0,.45)}
+  .dlg-h{padding:14px 20px;color:#fff;font-weight:700;font-size:16px}
+  .dlg-h.out{background:var(--out)} .dlg-h.in{background:var(--in)} .dlg-h.neutral{background:var(--blue)}
+  .dlg-b{padding:18px 20px;max-height:70vh;overflow:auto}
+  .dlg-f{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+  .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .form .full{grid-column:1/-1}
+  .radio{display:flex;gap:12px}
+  .radio label{flex-direction:row;align-items:center;gap:6px;font-size:14px;color:var(--ink);border:2px solid var(--line);padding:8px 12px;border-radius:6px;cursor:pointer;flex:1}
+  .radio input{padding:0}
+  .detail{display:grid;grid-template-columns:200px 1fr;gap:8px 14px}
+  .detail dt{color:var(--muted)} .detail dd{margin:0;font-weight:500;white-space:pre-wrap}
+  /* report */
+  .rep-head{display:flex;align-items:center;gap:20px;margin-bottom:16px;padding-bottom:12px;border-bottom:3px solid var(--blue)}
+  .rep-head h2{margin:0;font-size:20px} .rep-head small{color:var(--muted)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0 14px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .card b{display:block;font-size:20px;margin-top:2px}
+  .card span{font-size:12px;color:var(--muted)}
+  .sec{margin-bottom:26px}
+  .sec h3{margin:0 0 8px;padding:8px 12px;color:#fff;border-radius:6px 6px 0 0}
+  .sec.out h3{background:var(--out)} .sec.in h3{background:var(--in)} .sec.tot h3{background:var(--blue)}
+  .sec .cards .card{border-top:3px solid}
+  .sec.out .card{border-top-color:var(--out)} .sec.in .card{border-top-color:var(--in)} .sec.tot .card{border-top-color:var(--blue)}
+  .note{font-size:12px;color:var(--muted);margin-top:6px}
+  .sign{margin-top:36px;display:flex;justify-content:space-between;gap:30px}
+  .sign div{flex:1;border-top:1px solid #000;padding-top:4px;font-size:12px}
+  .hidden{display:none!important}
+  @media(max-width:700px){.form{grid-template-columns:1fr}.detail{grid-template-columns:1fr}header,main,nav{padding-left:12px;padding-right:12px}}
+  @media print{
+    body{background:#fff} header,nav,.noprint,#tab-reg{display:none!important}
+    main{padding:0;max-width:none} #tab-rep{display:block!important}
+    tr.out td,tr.in td,.tag,.lost,.plost,.sec h3,.dlg-h{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .sec{break-inside:avoid-page} table{font-size:11px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div id="brandTop"></div>
+  <h1>Реестр судебных исков (входящие и исходящие)</h1>
+  <div class="tools noprint">
+    <button class="btn" id="btnLogo" title="Загрузить логотип Казахтелеком">Логотип…</button>
+    <button class="btn" id="btnBackup">Сохранить копию данных</button>
+    <button class="btn" id="btnRestore">Загрузить копию</button>
+    <input type="file" id="fileLogo" accept="image/*" class="hidden">
+    <input type="file" id="fileRestore" accept="application/json" class="hidden">
+  </div>
+</header>
+
+<nav class="noprint">
+  <button data-tab="reg" class="active">Реестр исков</button>
+  <button data-tab="rep">Отчёт (квартал / год)</button>
+</nav>
+
+<div id="warn" class="hidden" style="background:#fff3cd;border-bottom:2px solid #e0a800;color:#533f03;padding:10px 24px;font-weight:600">
+  ⚠ Браузер не разрешает сохранять данные на этой странице — после обновления иски пропадут. Скачайте файл на компьютер и откройте его в обычном (не приватном) окне Chrome, Edge или Firefox. Пока что сохраняйте копию кнопкой «Сохранить копию данных».
+</div>
+<main>
+<!-- РЕЕСТР -->
+<section id="tab-reg">
+  <div class="filters">
+    <label class="grow">Поиск (ФИО, предмет, № дела, результат, примечание)
+      <input id="fQ" type="search" placeholder="Начните вводить…">
+    </label>
+    <label>Вид
+      <select id="fDir"><option value="">Все</option><option value="out">Исходящие</option><option value="in">Входящие</option></select>
+    </label>
+    <label>Год <select id="fYear"></select></label>
+    <label>Квартал
+      <select id="fQtr"><option value="">Все</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+    </label>
+    <label>Результат <select id="fRes"></select></label>
+    <label style="flex-direction:row;align-items:center;gap:6px;color:var(--ink)"><input type="checkbox" id="fLost"> Только проигранные</label>
+    <button class="btn" id="fReset">Сбросить</button>
+    <button class="btn primary" id="btnAdd">+ Добавить иск</button>
+    <button class="btn" id="btnCsvAll">Выгрузить в Excel (CSV)</button>
+  </div>
+  <p class="counter" id="counter"></p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th>Вид</th><th>Дата</th><th>№ дела</th><th>Истец</th><th>Ответчик</th><th>Предмет иска</th>
+        <th class="num">Сумма требований</th><th>Результат рассмотрения</th><th>Отметка</th><th></th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty hidden" id="empty">Исков пока нет. Нажмите «+ Добавить иск».</div>
+  </div>
+</section>
+
+<!-- ОТЧЁТ -->
+<section id="tab-rep" class="hidden">
+  <div class="filters noprint">
+    <label>Период
+      <select id="rType"><option value="q">Квартал</option><option value="y">Год</option></select>
+    </label>
+    <label>Год <select id="rYear"></select></label>
+    <label id="rQtrWrap">Квартал
+      <select id="rQtr"><option value="1">1 квартал</option><option value="2">2 квартал</option><option value="3">3 квартал</option><option value="4">4 квартал</option></select>
+    </label>
+    <button class="btn primary" id="btnPrint">Печать / PDF</button>
+    <button class="btn" id="btnCsvRep">Выгрузить отчёт в Excel (CSV)</button>
+  </div>
+  <div id="report"></div>
+</section>
+</main>
+
+<!-- Карточка иска -->
+<dialog id="dView">
+  <div class="dlg-h" id="vHead"></div>
+  <div class="dlg-b"><dl class="detail" id="vBody"></dl></div>
+  <div class="dlg-f">
+    <button class="btn" id="vCopy">Копировать данные</button>
+    <button class="btn" id="vEdit">Редактировать</button>
+    <button class="btn" id="vClose">Закрыть</button>
+  </div>
+</dialog>
+
+<!-- Форма иска -->
+<dialog id="dForm">
+  <form method="dialog" id="form">
+    <div class="dlg-h neutral" id="fHead">Новый иск</div>
+    <div class="dlg-b">
+      <div class="form">
+        <div class="full radio">
+          <label><input type="radio" name="dir" value="out" checked> <b style="color:var(--out)">Исходящий</b>&nbsp;— иск подан Казахтелекомом</label>
+          <label><input type="radio" name="dir" value="in"> <b style="color:var(--in)">Входящий</b>&nbsp;— иск к Казахтелекому</label>
+        </div>
+        <label>Дата подачи / поступления иска * <input type="date" name="date" required></label>
+        <label>№ дела <input name="caseNo" placeholder="например, 6294-26-00-2/1234"></label>
+        <label class="full">Истец (ФИО / наименование) * <input name="plaintiff" required></label>
+        <label class="full">Ответчик (ФИО / наименование) * <input name="defendant" required></label>
+        <label class="full">Предмет иска * <textarea name="subject" rows="2" required></textarea></label>
+        <label>Сумма исковых требований, ₸ * <input type="number" name="amount" min="0" step="0.01" required></label>
+        <label>Суд <input name="court"></label>
+        <label>Результат рассмотрения *
+          <select name="result" id="fResult" required></select>
+        </label>
+        <label>Дата решения <input type="date" name="decisionDate"></label>
+        <label>Присуждено / взыскано, ₸ (если есть) <input type="number" name="awarded" min="0" step="0.01"></label>
+        <label class="full">Примечание <textarea name="note" rows="2"></textarea></label>
+      </div>
+      <p class="note">Отметка «ПРОИГРАН» ставится автоматически: по исходящему иску — при отказе в иске, по входящему — при полном удовлетворении иска к Казахтелекому. При частичном удовлетворении ставится отметка «Проигран частично».</p>
+    </div>
+    <div class="dlg-f">
+      <button class="btn danger hidden" type="button" id="fDelete">Удалить</button>
+      <span style="flex:1"></span>
+      <button class="btn" type="button" id="fCancel">Отмена</button>
+      <button class="btn primary" type="submit">Сохранить</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function(){
+  // ---------- справочники ----------
+  var RESULTS=[
+    {v:'pending',t:'На рассмотрении'},
+    {v:'full',t:'Иск удовлетворён полностью'},
+    {v:'partial',t:'Иск удовлетворён частично'},
+    {v:'denied',t:'В иске отказано'},
+    {v:'settled',t:'Мировое соглашение'},
+    {v:'dropped',t:'Прекращено / оставлено без рассмотрения'}
+  ];
+  var RES_T={}; RESULTS.forEach(function(r){RES_T[r.v]=r.t});
+  var DIR_T={out:'Исходящий',in:'Входящий'};
+
+  // ---------- хранилище ----------
+  var KEY='kt_claims_v1', mem={};
+  function warn(on){var w=document.getElementById('warn');if(w)w.classList.toggle('hidden',!on)}
+  function lget(k){try{return localStorage.getItem(k)}catch(e){return mem[k]||null}}
+  function lset(k,v){
+    try{localStorage.setItem(k,v); if(localStorage.getItem(k)!==v)throw 0; warn(false)}
+    catch(e){mem[k]=v; warn(true)}
+  }
+  try{localStorage.setItem('kt_test','1');localStorage.removeItem('kt_test')}catch(e){setTimeout(function(){warn(true)},0)}
+  var claims=[]; try{claims=JSON.parse(lget(KEY)||'[]')}catch(e){claims=[]}
+  function save(){lset(KEY,JSON.stringify(claims))}
+  function uid(){return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+
+  // ---------- утилиты ----------
+  var $=function(s){return document.querySelector(s)};
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function money(n){return (Number(n)||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' ₸'}
+  function dt(s){if(!s)return '—';var p=s.split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:s}
+  function yearOf(c){return c.date?+c.date.slice(0,4):0}
+  function qtrOf(c){return c.date?Math.ceil(+c.date.slice(5,7)/3):0}
+
+  // исход с точки зрения Казахтелекома
+  function outcome(c){
+    var r=c.result;
+    if(r==='pending')return 'pending';
+    if(r==='settled'||r==='dropped')return 'other';
+    if(r==='partial')return 'partial';
+    if(c.dir==='out') return r==='full'?'win':'lose';      // KT истец
+    return r==='denied'?'win':'lose';                       // KT ответчик
+  }
+  function mark(c){
+    var o=outcome(c);
+    if(o==='lose')return '<span class="lost">⚠ ПРОИГРАН</span>';
+    if(o==='partial')return '<span class="plost">Проигран частично</span>';
+    if(o==='win')return '<span class="won">✔ выигран</span>';
+    return '';
+  }
+  function markText(c){var o=outcome(c);return o==='lose'?'ПРОИГРАН':o==='partial'?'Проигран частично':o==='win'?'Выигран':''}
+
+  // ---------- бренд / логотип ----------
+  function brand(){
+    var u=lget('kt_logo')||'logo.png';
+    return '<span class="brand-mark"><img src="'+esc(u)+'" alt="Казахтелеком" style="display:none" '+
+      'onload="this.style.display=\'block\';this.nextElementSibling.style.display=\'none\'">'+
+      '<span class="wordmark">Казахтелеком</span></span>';
+  }
+  function drawBrand(){$('#brandTop').innerHTML=brand()}
+  $('#btnLogo').onclick=function(){$('#fileLogo').click()};
+  $('#fileLogo').onchange=function(e){
+    var f=e.target.files[0]; if(!f)return;
+    var r=new FileReader(); r.onload=function(){lset('kt_logo',r.result);drawBrand();renderReport()}; r.readAsDataURL(f);
+    e.target.value='';
+  };
+
+  // ---------- вкладки ----------
+  document.querySelectorAll('nav button').forEach(function(b){
+    b.onclick=function(){
+      document.querySelectorAll('nav button').forEach(function(x){x.classList.toggle('active',x===b)});
+      $('#tab-reg').classList.toggle('hidden',b.dataset.tab!=='reg');
+      $('#tab-rep').classList.toggle('hidden',b.dataset.tab!=='rep');
+      if(b.dataset.tab==='rep')renderReport();
+    };
+  });
+
+  // ---------- селекты ----------
+  function fillYears(){
+    var cy=new Date().getFullYear(), ys={}; ys[cy]=1;
+    claims.forEach(function(c){if(yearOf(c))ys[yearOf(c)]=1});
+    var list=Object.keys(ys).map(Number).sort(function(a,b){return b-a});
+    var f=$('#fYear'), r=$('#rYear'), fv=f.value, rv=r.value;
+    f.innerHTML='<option value="">Все</option>'+list.map(function(y){return '<option>'+y+'</option>'}).join('');
+    r.innerHTML=list.map(function(y){return '<option>'+y+'</option>'}).join('');
+    if(fv)f.value=fv; r.value=rv||String(cy);
+  }
+  $('#fRes').innerHTML='<option value="">Все</option>'+RESULTS.map(function(r){return '<option value="'+r.v+'">'+r.t+'</option>'}).join('');
+  $('#fResult').innerHTML=RESULTS.map(function(r){return '<option value="'+r.v+'">'+r.t+'</option>'}).join('');
+  (function(){var m=Math.ceil((new Date().getMonth()+1)/3);$('#rQtr').value=String(m)})();
+
+  // ---------- реестр ----------
+  function filtered(){
+    var q=$('#fQ').value.trim().toLowerCase(), d=$('#fDir').value, y=$('#fYear').value, qt=$('#fQtr').value, rs=$('#fRes').value, lo=$('#fLost').checked;
+    return claims.filter(function(c){
+      if(d&&c.dir!==d)return false;
+      if(y&&yearOf(c)!==+y)return false;
+      if(qt&&qtrOf(c)!==+qt)return false;
+      if(rs&&c.result!==rs)return false;
+      if(lo&&['lose','partial'].indexOf(outcome(c))<0)return false;
+      if(q){
+        var hay=[c.plaintiff,c.defendant,c.subject,c.caseNo,c.court,c.note,RES_T[c.result],DIR_T[c.dir],c.amount,markText(c)].join(' ').toLowerCase();
+        if(q.split(/\s+/).some(function(w){return hay.indexOf(w)<0}))return false;
+      }
+      return true;
+    }).sort(function(a,b){return (b.date||'').localeCompare(a.date||'')});
+  }
+  function renderReg(){
+    var list=filtered();
+    $('#tbody').innerHTML=list.map(function(c){
+      return '<tr class="clickable '+c.dir+'" data-id="'+c.id+'">'+
+        '<td><span class="tag '+c.dir+'">'+DIR_T[c.dir]+'</span></td>'+
+        '<td>'+dt(c.date)+'</td><td>'+esc(c.caseNo)+'</td>'+
+        '<td>'+esc(c.plaintiff)+'</td><td>'+esc(c.defendant)+'</td><td>'+esc(c.subject)+'</td>'+
+        '<td class="num">'+money(c.amount)+'</td><td>'+esc(RES_T[c.result])+'</td><td>'+mark(c)+'</td>'+
+        '<td><button class="btn sm" data-edit="'+c.id+'">Изм.</button></td></tr>';
+    }).join('');
+    $('#empty').classList.toggle('hidden',claims.length>0);
+    var sum=list.reduce(function(s,c){return s+(+c.amount||0)},0);
+    $('#counter').textContent='Найдено: '+list.length+' из '+claims.length+(list.length?' · сумма требований: '+money(sum):'');
+  }
+  $('#tbody').onclick=function(e){
+    var ed=e.target.closest('[data-edit]'); if(ed){openForm(ed.dataset.edit);e.stopPropagation();return}
+    var tr=e.target.closest('tr[data-id]'); if(tr)openView(tr.dataset.id);
+  };
+  ['fQ','fDir','fYear','fQtr','fRes','fLost'].forEach(function(id){$('#'+id).addEventListener('input',renderReg)});
+  $('#fReset').onclick=function(){$('#fQ').value='';$('#fDir').value='';$('#fYear').value='';$('#fQtr').value='';$('#fRes').value='';$('#fLost').checked=false;renderReg()};
+
+  // ---------- карточка ----------
+  var viewId=null;
+  function viewText(c){
+    return ['Вид: '+DIR_T[c.dir],'Дата подачи/поступления: '+dt(c.date),'№ дела: '+(c.caseNo||'—'),'Суд: '+(c.court||'—'),
+      'Истец: '+c.plaintiff,'Ответчик: '+c.defendant,'Предмет иска: '+c.subject,'Сумма исковых требований: '+money(c.amount),
+      'Результат рассмотрения: '+RES_T[c.result],'Дата решения: '+dt(c.decisionDate),
+      'Присуждено/взыскано: '+(c.awarded?money(c.awarded):'—'),'Отметка: '+(markText(c)||'—'),'Примечание: '+(c.note||'—')].join('\n');
+  }
+  function openView(id){
+    var c=claims.find(function(x){return x.id===id}); if(!c)return; viewId=id;
+    $('#vHead').className='dlg-h '+c.dir;
+    $('#vHead').textContent=DIR_T[c.dir]+' иск'+(c.caseNo?' · дело № '+c.caseNo:'');
+    var rows=[['Дата подачи / поступления',dt(c.date)],['Суд',c.court||'—'],['Истец',c.plaintiff],['Ответчик',c.defendant],
+      ['Предмет иска',c.subject],['Сумма исковых требований',money(c.amount)],['Результат рассмотрения',RES_T[c.result]],
+      ['Дата решения',dt(c.decisionDate)],['Присуждено / взыскано',c.awarded?money(c.awarded):'—'],['Отметка',null],['Примечание',c.note||'—']];
+    $('#vBody').innerHTML=rows.map(function(r){
+      return '<dt>'+r[0]+'</dt><dd>'+(r[1]===null?(mark(c)||'—'):esc(r[1]))+'</dd>';
+    }).join('');
+    $('#dView').showModal();
+  }
+  $('#vClose').onclick=function(){$('#dView').close()};
+  $('#vEdit').onclick=function(){$('#dView').close();openForm(viewId)};
+  $('#vCopy').onclick=function(){
+    var c=claims.find(function(x){return x.id===viewId}); if(!c)return;
+    var t=viewText(c), b=$('#vCopy');
+    function ok(){b.textContent='Скопировано ✔';setTimeout(function(){b.textContent='Копировать данные'},1500)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,function(){})}
+    else{var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');ok()}catch(e){}ta.remove()}
+  };
+
+  // ---------- форма ----------
+  var editId=null, F=$('#form');
+  function openForm(id){
+    editId=id||null; F.reset();
+    var c=id?claims.find(function(x){return x.id===id}):null;
+    $('#fHead').textContent=c?'Редактирование иска':'Новый иск';
+    $('#fDelete').classList.toggle('hidden',!c);
+    if(c){
+      ['date','caseNo','plaintiff','defendant','subject','amount','court','result','decisionDate','awarded','note'].forEach(function(k){F.elements[k].value=c[k]==null?'':c[k]});
+      F.elements.dir.value=c.dir;
+    }else{
+      F.elements.date.value=new Date().toISOString().slice(0,10);
+      F.elements.result.value='pending';
+    }
+    $('#dForm').showModal();
+  }
+  $('#btnAdd').onclick=function(){openForm()};
+  $('#fCancel').onclick=function(){$('#dForm').close()};
+  $('#fDelete').onclick=function(){
+    if(!editId||!confirm('Удалить этот иск из реестра безвозвратно?'))return;
+    claims=claims.filter(function(x){return x.id!==editId}); save(); $('#dForm').close(); refresh();
+  };
+  F.addEventListener('submit',function(e){
+    var el=F.elements, o={
+      id:editId||uid(), dir:el.dir.value, date:el.date.value, caseNo:el.caseNo.value.trim(),
+      plaintiff:el.plaintiff.value.trim(), defendant:el.defendant.value.trim(), subject:el.subject.value.trim(),
+      amount:parseFloat(el.amount.value)||0, court:el.court.value.trim(), result:el.result.value,
+      decisionDate:el.decisionDate.value, awarded:parseFloat(el.awarded.value)||0, note:el.note.value.trim()
+    };
+    if(editId){claims=claims.map(function(x){return x.id===editId?o:x})}else{claims.push(o)}
+    save(); refresh();
+  });
+
+  // ---------- отчёт ----------
+  function stats(list){
+    var s={n:list.length,sum:0,awarded:0,win:0,lose:0,partial:0,other:0,pending:0};
+    list.forEach(function(c){s.sum+=+c.amount||0;s.awarded+=+c.awarded||0;s[outcome(c)]++});
+    return s;
+  }
+  function repList(){
+    var y=+$('#rYear').value, t=$('#rType').value, q=+$('#rQtr').value;
+    return claims.filter(function(c){return yearOf(c)===y&&(t==='y'||qtrOf(c)===q)})
+                 .sort(function(a,b){return (a.date||'').localeCompare(b.date||'')});
+  }
+  function periodName(){
+    return $('#rType').value==='y' ? $('#rYear').value+' год' : $('#rQtr').value+' квартал '+$('#rYear').value+' г.';
+  }
+  function cards(s){
+    var items=[['Всего исков',s.n],['Сумма требований',money(s.sum)],['Выиграно',s.win],['Проиграно',s.lose],['Проиграно частично',s.partial],
+      ['Мировые / прекращены',s.other],['На рассмотрении',s.pending]];
+    if(s.awarded)items.push(['Присуждено / взыскано',money(s.awarded)]);
+    return '<div class="cards">'+items.map(function(i){return '<div class="card"><span>'+i[0]+'</span><b>'+i[1]+'</b></div>'}).join('')+'</div>';
+  }
+  function repTable(list){
+    if(!list.length)return '<p class="note">За выбранный период исков нет.</p>';
+    var rows=list.map(function(c,i){
+      return '<tr class="'+c.dir+'"><td>'+(i+1)+'</td><td>'+dt(c.date)+'</td><td>'+esc(c.caseNo)+'</td><td>'+esc(c.plaintiff)+'</td><td>'+esc(c.defendant)+
+        '</td><td>'+esc(c.subject)+'</td><td class="num">'+money(c.amount)+'</td><td>'+esc(RES_T[c.result])+(c.decisionDate?'<br><small>'+dt(c.decisionDate)+'</small>':'')+'</td><td>'+mark(c)+'</td></tr>';
+    }).join('');
+    return '<div class="tablewrap"><table><thead><tr><th>№</th><th>Дата</th><th>№ дела</th><th>Истец</th><th>Ответчик</th><th>Предмет иска</th><th class="num">Сумма требований</th><th>Результат</th><th>Отметка</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+  function renderReport(){
+    $('#rQtrWrap').classList.toggle('hidden',$('#rType').value==='y');
+    var list=repList(), out=list.filter(function(c){return c.dir==='out'}), inc=list.filter(function(c){return c.dir==='in'});
+    var now=new Date().toLocaleDateString('ru-RU');
+    $('#report').innerHTML=
+      '<div class="rep-head">'+brand()+'<div><h2>Отчёт по судебным искам за '+esc(periodName())+'</h2><small>АО «Казахтелеком» · сформирован '+now+'</small></div></div>'+
+      '<div class="sec tot"><h3>Итого по всем искам</h3>'+cards(stats(list))+'</div>'+
+      '<div class="sec out"><h3>Исходящие иски (поданы Казахтелекомом)</h3>'+cards(stats(out))+repTable(out)+'</div>'+
+      '<div class="sec in"><h3>Входящие иски (предъявлены Казахтелекому)</h3>'+cards(stats(inc))+repTable(inc)+'</div>'+
+      '<p class="note">Период определяется по дате подачи / поступления иска. «Проигран»: по исходящему иску — отказ в иске; по входящему — полное удовлетворение иска. «Выигран»: по исходящему — иск удовлетворён полностью; по входящему — в иске отказано.</p>'+
+      '<div class="sign"><div>Исполнитель</div><div>Руководитель</div><div>Дата</div></div>';
+  }
+  ['rType','rYear','rQtr'].forEach(function(id){$('#'+id).addEventListener('input',renderReport)});
+  $('#btnPrint').onclick=function(){window.print()};
+
+  // ---------- экспорт ----------
+  function csv(list,name){
+    var head=['Вид','Дата подачи/поступления','№ дела','Суд','Истец','Ответчик','Предмет иска','Сумма требований, тенге','Результат рассмотрения','Дата решения','Присуждено, тенге','Отметка','Примечание'];
+    function cell(v){v=String(v==null?'':v).replace(/"/g,'""');return '"'+v+'"'}
+    var lines=[head.map(cell).join(';')].concat(list.map(function(c){
+      return [DIR_T[c.dir],dt(c.date),c.caseNo,c.court,c.plaintiff,c.defendant,c.subject,c.amount,RES_T[c.result],dt(c.decisionDate),c.awarded||'',markText(c),c.note].map(cell).join(';');
+    }));
+    dl('\ufeff'+lines.join('\r\n'),name,'text/csv;charset=utf-8');
+  }
+  function dl(text,name,type){
+    var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:type})); a.download=name;
+    document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);
+  }
+  $('#btnCsvAll').onclick=function(){csv(filtered(),'iski_reestr.csv')};
+  $('#btnCsvRep').onclick=function(){csv(repList(),'iski_otchet_'+periodName().replace(/[^0-9а-яa-z]+/gi,'_')+'.csv')};
+  $('#btnBackup').onclick=function(){dl(JSON.stringify({version:1,claims:claims},null,1),'iski_kopiya_'+new Date().toISOString().slice(0,10)+'.json','application/json')};
+  $('#btnRestore').onclick=function(){$('#fileRestore').click()};
+  $('#fileRestore').onchange=function(e){
+    var f=e.target.files[0]; if(!f)return;
+    var r=new FileReader(); r.onload=function(){
+      try{
+        var d=JSON.parse(r.result), arr=Array.isArray(d)?d:d.claims;
+        if(!Array.isArray(arr))throw 0;
+        if(!confirm('Загрузить '+arr.length+' исков? Текущий реестр ('+claims.length+') будет заменён.'))return;
+        claims=arr; save(); refresh();
+      }catch(err){alert('Не удалось прочитать файл копии.')}
+    }; r.readAsText(f); e.target.value='';
+  };
+
+  function refresh(){fillYears();renderReg();renderReport()}
+  drawBrand(); refresh();
+})();
+</script>
+</body>
+</html>
